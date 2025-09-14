@@ -1,5 +1,6 @@
 -module(dijkstra).
--export([entry/2, replace/4, update/4]).
+-import(map, [all_nodes/1]).
+-export([entry/2, replace/4, update/4, iterate/3, table/2]).
 
 entry(Node, Sorted) ->
     lists:foldl(fun({A, B, _}, Acc)-> 
@@ -20,19 +21,7 @@ entry(Node, Sorted) ->
 
 replace(Node, N, Gateway, Sorted) ->
     Cleaned = lists:keydelete(Node, 1, Sorted),
-    New = {Node, N, Gateway},
-    {Res, Inserted} = lists:foldr(fun(E = {_, Dist, _}, {Acc, Ins}) ->
-        case {Ins, Dist < N} of
-            {false, true} -> {[E, New | Acc], true};
-            _ -> {[E | Acc], Ins}
-        end
-    end, {[], false}, Cleaned),
-    case Inserted of
-        true ->
-            Res;
-        false ->
-            [New | Res]
-    end.
+    lists:sort(fun({_, A, _}, {_, B, _}) -> A =< B end, Cleaned ++ [{Node, N, Gateway}]).
 
 update(Node, N, Gateway, Sorted) ->
     C = entry(Node, Sorted),
@@ -42,3 +31,22 @@ update(Node, N, Gateway, Sorted) ->
         true -> 
             Sorted
     end.
+
+iterate([], _, Table) -> Table;
+iterate([{_, inf, _}], _, Table) -> Table;
+iterate([{Node, D, Gateway} | Rest], Map, Table) ->  
+        Neighbors = case lists:keyfind(Node, 1, Map) of
+            {Node, L} -> L;
+            false -> []
+        end,
+        New = lists:foldl(fun(X, Acc) -> 
+            update(X, D + 1, Gateway, Acc)
+        end, Rest, Neighbors),
+        iterate(New, Map, Table ++ [{Node, Gateway}]).
+
+table(Gateways, Map) ->
+    New = all_nodes(Map),
+    Sorted = lists:map(fun(X) -> {X, inf, unknown} end, New),
+    Sorted.
+
+% dijkstra:iterate([{paris, 0, paris}, {berlin, inf, unknown}], [{paris, [berlin]}], []). -> 
