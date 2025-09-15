@@ -1,6 +1,6 @@
 -module(dijkstra).
 -import(map, [all_nodes/1]).
--export([entry/2, replace/4, update/4, iterate/3, table/2]).
+-export([table/2, route/2]).
 
 entry(Node, Sorted) ->
     lists:foldl(fun({A, B, _}, Acc)-> 
@@ -45,8 +45,17 @@ iterate([{Node, D, Gateway} | Rest], Map, Table) ->
         iterate(New, Map, Table ++ [{Node, Gateway}]).
 
 table(Gateways, Map) ->
-    New = all_nodes(Map),
-    Sorted = lists:map(fun(X) -> {X, inf, unknown} end, New),
-    Sorted.
+    AllNodes = all_nodes(Map),
+    Sorted = lists:map(fun(X) -> {X, inf, unknown} end, AllNodes),
+    New = lists:map(fun(X) -> {X, 0, X} end, Gateways),
+    UpdatedSorted = lists:foldl(fun({A, B, C}, Acc) ->
+            update(A, B, C, Acc)
+        end, Sorted, New),
+    UpdatedSorted,
+    iterate(UpdatedSorted, Map, []). 
 
-% dijkstra:iterate([{paris, 0, paris}, {berlin, inf, unknown}], [{paris, [berlin]}], []). -> 
+route(Node, Table) ->
+    case lists:keyfind(Node, 1, Table) of
+        {_, A} -> {ok, A};
+        false -> notfound
+    end.
