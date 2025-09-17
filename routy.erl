@@ -27,12 +27,12 @@ router(Name, N, Hist, Intf, Table, Map) ->
         {remove, Node} ->
             {ok, Ref} = interface:ref(Node, Intf),
             erlang:demonitor(Ref),
-            Intf1 = interface:remove(Node, Ref),
+            Intf1 = interface:remove(Node, Intf),
             router(Name, N, Hist, Intf1, Table, Map);
         {'DOWN', Ref, process, _, _} ->
             {ok, Down} = interface:name(Ref, Intf),
             io:format("~w : Process down ~w~n", [Name,Down]),
-            Intf1 = interface:remove(Down, Ref),
+            Intf1 = interface:remove(Down, Intf),
             router(Name, N, Hist, Intf1, Table, Map);
         {check_status, Pid} ->
             Pid ! {status, self()};
@@ -55,7 +55,7 @@ router(Name, N, Hist, Intf, Table, Map) ->
             Message = {links, Name, N, interface:list(Intf)},
             interface:broadcast(Message, Intf),
             router(Name, N + 1, Hist, Intf, Table, Map);
-        {route, Name, From, Message} ->
+        {route, Name, _From, Message} ->
             io:format("~w: received message ~w ~n", [Name, Message]),
             router(Name, N, Hist, Intf, Table, Map);
         {route, To, From, Message} ->

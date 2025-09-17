@@ -5,7 +5,10 @@ new() ->
     [].
 
 add(Name, Ref, Pid, Intf) ->
-    Intf ++ [{Name, Ref, Pid}].
+    case lists:keyfind(Name, 1, Intf) of
+        false -> Intf ++ [{Name, Ref, Pid}];
+        _ -> Intf
+    end.
 
 remove(Name, Intf) ->
     lists:keydelete(Name, 1, Intf).
@@ -27,7 +30,7 @@ ref(Name, Intf) ->
     end.
 
 name(Ref, Intf) ->
-    case lists:keyfind(Ref, 1, Intf) of
+    case lists:keyfind(Ref, 2, Intf) of
         {Name, _, _} ->
             {ok, Name};
         false ->

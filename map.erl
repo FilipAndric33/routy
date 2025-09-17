@@ -6,16 +6,13 @@ new() ->
     Map.
 
 update(Node, Links, Map) ->
-    lists:keydelete(Node, 1, Map),
-    Map ++ [{Node, Links}].
+    New = lists:keydelete(Node, 1, Map),
+    New ++ [{Node, Links}].
 
 reachable(Node, Map) ->
-    case Map of
-        [{Node, L} | _] -> 
-            L;
-        [_ | _] ->
-            [];
-        [] -> []
+    case lists:keyfind(Node, 1, Map) of
+        {Node, L} -> L;
+        false -> []
     end.
 
 all_nodes(Map) ->

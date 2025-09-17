@@ -33,7 +33,7 @@ update(Node, N, Gateway, Sorted) ->
     end.
 
 iterate([], _, Table) -> Table;
-iterate([{_, inf, _}], _, Table) -> Table;
+iterate([{_, inf, _} | _], _, Table) -> Table;
 iterate([{Node, D, Gateway} | Rest], Map, Table) ->  
         Neighbors = case lists:keyfind(Node, 1, Map) of
             {Node, L} -> L;
